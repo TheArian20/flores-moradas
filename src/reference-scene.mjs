@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-export const phrases=['Eres increÃ­ble','Eres mi universo','Te quiero mucho','Siempre contigo','Eres especial','Mi persona favorita','Gracias por existir','Eres magia','Contigo todo es mejor','Te mereces lo bonito','Mi lugar favorito','Eres mi alegrÃ­a','AdmiraciÃ³n','Gratitud','CariÃ±o','Eres Ãºnica','QuÃ© suerte tenerte','Eres irremplazable','Me haces sonreÃ­r','Contigo la vida es mÃ¡s bonita','Siempre estarÃ© para ti'];
+export const phrases=['Eres increíble','Eres mi universo','Te quiero mucho','Siempre contigo','Eres especial','Mi persona favorita','Gracias por existir','Eres magia','Contigo todo es mejor','Te mereces lo bonito','Mi lugar favorito','Eres mi alegría','Admiración','Gratitud','Cariño','Eres única','Qué suerte tenerte','Eres irremplazable','Me haces sonreír','Contigo la vida es más bonita','Siempre estaré para ti'];
 export function createReferenceScene(textures,glow,makeText,random){
  const world=new THREE.Group(),billboards=[];
  const materialFor=map=>new THREE.MeshBasicMaterial({map,transparent:true,alphaTest:.025,side:THREE.DoubleSide,depthWrite:false,toneMapped:false});
@@ -38,7 +38,7 @@ export function createReferenceScene(textures,glow,makeText,random){
  // Curved lettering follows inclined orbits, rather than floating in one flat layer.
  for(let j=0;j<3;j++){
   const orbit=new THREE.Group();orbit.rotation.set(.18+j*.25,0,j*.3);world.add(orbit);
-  const str=['GRACIAS POR EXISTIR  Â·  ','ERES ESPECIAL  Â·  ','MI PERSONA FAVORITA  Â·  '][j].repeat(2),radius=2.7+j*.8;
+  const str=['GRACIAS POR EXISTIR  ·  ','ERES ESPECIAL  ·  ','MI PERSONA FAVORITA  ·  '][j].repeat(2),radius=2.7+j*.8;
   for(let k=0;k<str.length;k++){
    if(str[k]===' ')continue;
    const a=k/str.length*Math.PI*2,letter=new THREE.Mesh(new THREE.PlaneGeometry(.37,.42),materialFor(makeText(str[k],true)));

@@ -16,6 +16,8 @@ Descarga `index.html` y ábrelo en Chrome, Edge o Firefox con WebGL y aceleraci�
 
 La animación comienza pausada cuando el sistema solicita movimiento reducido.
 
+La flor central se despliega al entrar y deforma sus pétalos con ondas desfasadas, una respiración suave y un balanceo. La animación conserva el centro y se detiene al pausar o abrir la carta.
+
 ## Editar y reconstruir
 
 Las fuentes actuales están en `src/main.mjs`, `src/reference-scene.mjs`, `src/reference-assets.mjs` y `src/template.html`. Las cuatro texturas WebP están integradas en el módulo para permitir abrir el HTML sin conexión.

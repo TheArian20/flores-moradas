@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+﻿import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';
 import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
@@ -7,6 +7,7 @@ import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';
 
 import assets from './reference-assets.mjs';
 import {createReferenceScene} from './reference-scene.mjs';
+import {createFlowerMotion} from './flower-motion.mjs';
 const canvas=document.getElementById('galaxy'),button=document.getElementById('enter'),message=document.getElementById('message'),status=document.getElementById('status');
 let rng=314159;const random=()=>((rng=(Math.imul(rng,1664525)+1013904223)>>>0)/4294967296);
 let renderer;
@@ -25,6 +26,7 @@ const loader=new THREE.TextureLoader(),textures={};let loaded=0;
 for(const [key,url]of Object.entries(assets)){textures[key]=loader.load(url,()=>{if(++loaded===4)button.disabled=false;},undefined,()=>{status.textContent='No se pudieron cargar las flores. Recarga la página.';});textures[key].colorSpace=THREE.SRGBColorSpace;textures[key].anisotropy=renderer.capabilities.getMaxAnisotropy();}
 const {world,rose,dust,sparkles,intro,billboards}=createReferenceScene(textures,glow,makeText,random);scene.add(world,intro);world.visible=false;
 const introMaterial=intro.material;
+const animateFlower=createFlowerMotion(rose);
 function fitIntro(){const visibleHeight=2*homeDistance()*Math.tan(THREE.MathUtils.degToRad(43/2)),diameter=Math.min(camera.aspect*.68,.42)*visibleHeight;intro.scale.setScalar(diameter/3.4);intro.position.z=-visibleHeight*.045;}fitIntro();
 const starPositions=[];for(let i=0;i<1800;i++)starPositions.push((random()-.5)*65,(random()-.5)*45,(random()-.5)*65);
 const stars=new THREE.Points(new THREE.BufferGeometry().setAttribute('position',new THREE.Float32BufferAttribute(starPositions,3)),new THREE.PointsMaterial({map:glow,color:0xc696ee,size:.035,transparent:true,opacity:.42,depthWrite:false}));scene.add(stars);
@@ -50,6 +52,7 @@ renderer.setAnimationLoop(now=>{
   world.scale.setScalar(.08+.92*reveal);world.visible=reveal>.01;
   if(transition>.42)document.body.classList.add('open');
   world.rotation.y=time*.035;dust.rotation.y=time*.009;rose.rotation.y=time*.045;
+  animateFlower(time,reveal);
   sparkles.material.opacity=.65+Math.sin(time*1.7)*.22;
  }
  world.updateMatrixWorld(true);world.getWorldQuaternion(inverseWorld).invert();
