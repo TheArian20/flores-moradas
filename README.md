@@ -20,17 +20,17 @@ La flor central se despliega al entrar y deforma sus pétalos con ondas desfasad
 
 ## Editar y reconstruir
 
-Las fuentes actuales están en `src/main.mjs`, `src/reference-scene.mjs`, `src/reference-assets.mjs` y `src/template.html`. Las cuatro texturas WebP están integradas en el módulo para permitir abrir el HTML sin conexión.
+Las fuentes actuales están en `src/main.mjs`, `src/reference-scene.mjs`, `src/galaxy-particles.mjs`, `src/flower-motion.mjs` y `src/template.html`. Las cuatro texturas WebP y la tipografía están integradas en `src/reference-assets.mjs` y `src/font-asset.mjs` para permitir abrir el HTML sin conexión.
 
 ```sh
 npm install
 npm run build
 ```
 
-El resultado es el `index.html` autónomo. Three.js se distribuye bajo MIT; véase `THREE-LICENSE.txt`.
+El resultado es el `index.html` autónomo. Three.js se distribuye bajo MIT; véase `THREE-LICENSE.txt`. La fuente Indie Flower se distribuye bajo OFL; véase `FONT-LICENSE.txt`.
 
 ## Validación
 
-Motor empaquetado, sintaxis validada y geometría comprobada. Se renderizaron vistas vertical, horizontal, lateral y de entrada con OpenGL a partir de la escena. Falta verificar la interacción y el postprocesado en un navegador real. Véase `REFERENCE-NOTES.md` para la revisión temporal del video y los límites de la reproducción.
+HTML probado en Chrome con WebGL, sin conexión y con capturas en vista móvil, escritorio, lateral, entrada y carta. Sin errores JavaScript ni WebGL. Zoom y movimiento reducido comprobados. El renderizado de pruebas usa software y no representa el rendimiento de un teléfono físico. Véase `REFERENCE-NOTES.md` para la revisión temporal del video.
 
-Las ilustraciones florales se crearon con la herramienta integrada de generación de imágenes en iteraciones previas. Son aproximaciones visuales, no los recursos originales del sitio mostrado en el video.
+La rosa central se reconstruyó a partir de un fotograma del video con la herramienta integrada de generación de imágenes. Véase `ASSET-PROMPT.md`. Las ilustraciones son reconstrucciones visuales, no los recursos originales del sitio mostrado en el video.

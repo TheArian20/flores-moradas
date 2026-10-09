@@ -8,29 +8,32 @@ import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';
 import assets from './reference-assets.mjs';
 import {createReferenceScene} from './reference-scene.mjs';
 import {createFlowerMotion} from './flower-motion.mjs';
+import fontData from './font-asset.mjs';
+async function initialize(){
+const handwriting=new FontFace('Galaxy Handwriting', 'url('+fontData+')');await handwriting.load();document.fonts.add(handwriting);
 const canvas=document.getElementById('galaxy'),button=document.getElementById('enter'),message=document.getElementById('message'),status=document.getElementById('status');
 let rng=314159;const random=()=>((rng=(Math.imul(rng,1664525)+1013904223)>>>0)/4294967296);
 let renderer;
 try{renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'});}catch(error){status.textContent='No se pudo iniciar WebGL. Activa la aceleración gráfica o prueba otro navegador.';throw error;}
-renderer.setPixelRatio(Math.min(devicePixelRatio,1.6));renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.95;
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.95;
 const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(43,innerWidth/innerHeight,.1,160);
 const bg=document.createElement('canvas');bg.width=512;bg.height=1024;
-const bgc=bg.getContext('2d'),bgGrad=bgc.createRadialGradient(256,510,0,256,510,570);bgGrad.addColorStop(0,'#200b34');bgGrad.addColorStop(.48,'#10071e');bgGrad.addColorStop(1,'#080411');bgc.fillStyle=bgGrad;bgc.fillRect(0,0,512,1024);scene.background=new THREE.CanvasTexture(bg);scene.background.colorSpace=THREE.SRGBColorSpace;
+const bgc=bg.getContext('2d'),bgGrad=bgc.createRadialGradient(256,510,0,256,510,570);bgGrad.addColorStop(0,'#241039');bgGrad.addColorStop(.48,'#13091f');bgGrad.addColorStop(1,'#090511');bgc.fillStyle=bgGrad;bgc.fillRect(0,0,512,1024);scene.background=new THREE.CanvasTexture(bg);scene.background.colorSpace=THREE.SRGBColorSpace;
 const controls=new OrbitControls(camera,canvas);controls.enableDamping=true;controls.dampingFactor=.065;controls.enablePan=false;controls.minDistance=5;controls.maxDistance=42;controls.minPolarAngle=.06;controls.maxPolarAngle=Math.PI-.06;controls.zoomSpeed=.65;controls.enabled=false;controls.target.set(0,0,0);
 const homeDistance=()=>Math.max(12,10.5/camera.aspect);
 function reset(){const d=homeDistance();camera.position.set(0,d*.94,d*.342);controls.target.set(0,0,0);controls.update();}reset();
 function glowTexture(){const c=document.createElement('canvas');c.width=c.height=64;const ctx=c.getContext('2d'),g=ctx.createRadialGradient(32,32,0,32,32,32);g.addColorStop(0,'#fffaff');g.addColorStop(.12,'#f8d5ff');g.addColorStop(.32,'#c262e777');g.addColorStop(1,'#8500bf00');ctx.fillStyle=g;ctx.fillRect(0,0,64,64);return new THREE.CanvasTexture(c);}
 const glow=glowTexture(),textCache=new Map();
-function makeText(text,single){const key=(single?'char:':'line:')+text;if(textCache.has(key))return textCache.get(key);const c=document.createElement('canvas');c.width=single?64:768;c.height=single?80:96;const ctx=c.getContext('2d');ctx.font=single?'52px Georgia':'40px "Comic Sans MS", "Segoe Print", cursive';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#f2dbff';ctx.fillText(text,c.width/2,c.height/2,c.width-6);const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;textCache.set(key,tex);return tex;}
+function makeText(text,single){const key=(single?'char:':'line:')+text;if(textCache.has(key))return textCache.get(key);const c=document.createElement('canvas');c.width=1024;c.height=128;const ctx=c.getContext('2d');ctx.font=single?'56px Georgia':'54px "Galaxy Handwriting"';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#f2dbff';ctx.fillText(text,c.width/2,c.height/2,c.width-6);const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;textCache.set(key,tex);return tex;}
 const loader=new THREE.TextureLoader(),textures={};let loaded=0;
 for(const [key,url]of Object.entries(assets)){textures[key]=loader.load(url,()=>{if(++loaded===4)button.disabled=false;},undefined,()=>{status.textContent='No se pudieron cargar las flores. Recarga la página.';});textures[key].colorSpace=THREE.SRGBColorSpace;textures[key].anisotropy=renderer.capabilities.getMaxAnisotropy();}
-const {world,rose,dust,sparkles,intro,billboards}=createReferenceScene(textures,glow,makeText,random);scene.add(world,intro);world.visible=false;
+const {world,rose,dust,sparkles,intro,billboards,updateGalaxy}=createReferenceScene(textures,glow,makeText,random);scene.add(world,intro);world.visible=false;
 const introMaterial=intro.material;
 const animateFlower=createFlowerMotion(rose);
 function fitIntro(){const visibleHeight=2*homeDistance()*Math.tan(THREE.MathUtils.degToRad(43/2)),diameter=Math.min(camera.aspect*.68,.42)*visibleHeight;intro.scale.setScalar(diameter/3.4);intro.position.z=-visibleHeight*.045;}fitIntro();
 const starPositions=[];for(let i=0;i<1800;i++)starPositions.push((random()-.5)*65,(random()-.5)*45,(random()-.5)*65);
 const stars=new THREE.Points(new THREE.BufferGeometry().setAttribute('position',new THREE.Float32BufferAttribute(starPositions,3)),new THREE.PointsMaterial({map:glow,color:0xc696ee,size:.035,transparent:true,opacity:.42,depthWrite:false}));scene.add(stars);
-const composer=new EffectComposer(renderer);composer.addPass(new RenderPass(scene,camera));const bloom=new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),.3,.42,.76);composer.addPass(bloom);composer.addPass(new OutputPass());
+const composer=new EffectComposer(renderer);composer.addPass(new RenderPass(scene,camera));const bloom=new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),.42,.55,.82);composer.addPass(bloom);composer.addPass(new OutputPass());
 let opened=false,transition=0,time=0,last=0,disposed=false,paused=matchMedia('(prefers-reduced-motion: reduce)').matches;
 function resize(){camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight,false);composer.setSize(innerWidth,innerHeight);if(!opened){reset();fitIntro();}}addEventListener('resize',resize);resize();
 button.addEventListener('click',()=>{opened=true;world.visible=true;button.disabled=true;document.body.classList.add('opening');canvas.focus();});
@@ -53,10 +56,13 @@ renderer.setAnimationLoop(now=>{
   if(transition>.42)document.body.classList.add('open');
   world.rotation.y=time*.035;dust.rotation.y=time*.009;rose.rotation.y=time*.045;
   animateFlower(time,reveal);
-  sparkles.material.opacity=.65+Math.sin(time*1.7)*.22;
+  updateGalaxy(time,renderer.getPixelRatio());
  }
  world.updateMatrixWorld(true);world.getWorldQuaternion(inverseWorld).invert();
  for(const mesh of billboards){spin.setFromAxisAngle(zAxis,mesh.userData.spin);mesh.quaternion.copy(inverseWorld).multiply(camera.quaternion).multiply(spin);}
  composer.render();
 });
 addEventListener('pagehide',event=>{if(event.persisted)return;disposed=true;renderer.setAnimationLoop(null);controls.dispose();const geometries=new Set(),materials=new Set(),textureSet=new Set([scene.background]);scene.traverse(o=>{if(o.geometry)geometries.add(o.geometry);if(o.material)materials.add(o.material);});for(const m of materials){for(const v of Object.values(m))if(v?.isTexture)textureSet.add(v);m.dispose();}for(const g of geometries)g.dispose();for(const t of textureSet)t.dispose();composer.dispose();renderer.dispose();},{once:true});
+
+}
+initialize().catch(error=>{console.error(error);document.getElementById('status').textContent='No se pudo cargar la galaxia. Recarga la página.';});

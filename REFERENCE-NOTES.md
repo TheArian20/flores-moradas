@@ -15,10 +15,12 @@ Video local: WhatsApp Video 2026-10-09 at 11.19.20.mp4. Duración 25,1 segundos,
 
 ## Implementación
 
-Escena Three.js con flor de entrada de 12.700 puntos, rosa central sobre superficie curva, 155 flores pequeñas orientadas hacia la cámara, 18.000 partículas, 140 destellos, 48 frases y tres órbitas con letras. Las interacciones de cámara del video se reproducen mediante arrastre y zoom del usuario; no se fuerzan los gestos de la grabación.
+Escena Three.js con flor de entrada de 12.700 puntos, rosa central sobre superficie curva animada, 180 flores pequeñas, 46 frases y tres cintas de texto continuas sobre órbitas inclinadas. La galaxia usa 10.000 partículas en brazos espirales, 4.200 en el núcleo, 420 destellos y 1.800 partículas suaves de profundidad. Se añadieron pequeños cristales facetados y la tipografía manuscrita Indie Flower incrustada. Las interacciones de cámara del video se reproducen mediante arrastre y zoom del usuario; no se fuerzan los gestos de la grabación.
 
-Los textos de la carta y los botones se conservaron. Las ilustraciones florales son recursos generados previamente, no los originales del sitio grabado. La barra del navegador, la hora, la batería y el cursor de la grabación no forman parte de la página.
+Los textos de la carta y los botones se conservaron. La rosa se regeneró tomando el fotograma 7 como referencia: pétalos anchos y redondeados con bordes azulados. El recurso y el prompt se documentan en `ASSET-PROMPT.md`. Las ilustraciones son reconstrucciones, no los recursos originales del sitio grabado. La barra del navegador, la hora, la batería y el cursor de la grabación no forman parte de la página.
 
 ## Comprobación
 
-Sintaxis y empaquetado del HTML; posiciones finitas de la geometría; exportación de cuatro vistas OpenGL desde la misma escena: vertical, horizontal, lateral e inicio. Estas vistas verifican composición y geometría, pero no sustituyen una prueba de interacción o del postprocesado en un navegador real.
+HTML probado en Chrome headless con renderizado WebGL y red desconectada. Capturas de la entrada, galaxia vertical (482 × 860), escritorio (1440 × 900), vista lateral y carta. Sin errores JavaScript ni WebGL. Zoom comprobado mediante cambio del canvas. Movimiento reducido comprobado mediante igualdad de dos capturas separadas. La prueba usa renderizado de software aislado y no mide el rendimiento de un teléfono físico.
+
+Capturas locales: `video-analysis/october/browser/`. Prueba reproducible desde `galaxia-morada`: `node browser-check.cjs`, usando las dependencias locales de `.render-tools/browser` y Chrome instalado.
