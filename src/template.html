@@ -10,6 +10,24 @@ body.ready .intro{opacity:1}
 .intro button:hover{background:linear-gradient(145deg,#fff5ff,#e3c4fa);box-shadow:0 10px 44px #b56be555;translate:0 -2px}
 .intro button:focus-visible{outline:2px solid #efd0ff;outline-offset:6px}
 .intro button:disabled{opacity:.5;cursor:wait}
+.intro button{isolation:isolate}
+.button-label{position:relative;z-index:1;display:inline-flex;align-items:center;gap:.4em;pointer-events:none}
+.button-heart{display:inline-block;transform-origin:50% 60%}
+.intro button::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(112deg,transparent 35%,#ffffffaa 48%,transparent 60%);background-size:280% 100%;background-position:150% 0;opacity:0}
+.intro button::after{content:"";position:absolute;inset:-5px;border:1px solid #e7b7ff88;border-radius:inherit;pointer-events:none;opacity:0}
+body.ready:not(.opening) .intro button:not(:disabled){animation:button-glow 3.2s ease-in-out infinite}
+body.ready:not(.opening) .intro button:not(:disabled)::before{animation:button-shine 4.5s ease-in-out infinite}
+body.ready:not(.opening) .intro button:not(:disabled)::after{animation:button-ripple 3.2s ease-out infinite}
+body.ready:not(.opening) .button-label{animation:button-drift 3.2s ease-in-out infinite}
+body.ready:not(.opening) .button-heart{animation:button-heartbeat 3.2s ease-in-out infinite}
+.intro button:hover::before,.intro button:focus-visible::before{animation-duration:2s!important}
+.intro button:active{transform:translateX(-50%) scale(.96);translate:0 1px;box-shadow:0 3px 15px #b56be555;transition:transform .12s,translate .12s}
+@keyframes button-glow{0%,100%{box-shadow:0 8px 28px #a34ad933,inset 0 1px 0 #ffffffaa;border-color:#f1dfffaa}50%{box-shadow:0 8px 45px #ba60ea77,0 0 12px #e4acff33,inset 0 1px 0 #ffffffdd;border-color:#fff0ff}}
+@keyframes button-shine{0%,12%{background-position:150% 0;opacity:0}22%{opacity:.85}55%{background-position:-60% 0;opacity:0}100%{background-position:-60% 0;opacity:0}}
+@keyframes button-ripple{0%{transform:scale(1);opacity:0}12%{opacity:.65}72%,100%{transform:scale(1.12,1.45);opacity:0}}
+@keyframes button-drift{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+@keyframes button-heartbeat{0%,35%,100%{transform:scale(1)}12%{transform:scale(1.18) rotate(-6deg)}23%{transform:scale(1.05)}29%{transform:scale(1.12) rotate(4deg)}}
+@media(prefers-reduced-motion:reduce){.intro button::before,.intro button::after{animation:none!important;opacity:0}}
 body.opening .intro{opacity:0;transform:translateY(-12px);pointer-events:none}
 body.opening .intro button{pointer-events:none}
 .letter{position:fixed;bottom:max(26px,env(safe-area-inset-bottom));right:24px;width:54px;height:54px;border-radius:50%;border:1px solid #dba8ff55;background:linear-gradient(145deg,#7024d7,#a742f0);box-shadow:0 0 25px #aa3df888;color:white;display:grid;place-items:center;cursor:pointer}.letter svg{width:25px;height:25px}.instructions{position:fixed;bottom:23px;left:20px;right:90px;margin:0;font:13px system-ui;color:#c0a5d0;opacity:0;pointer-events:none}body.open .instructions{animation:hint 8s forwards}@keyframes hint{0%,70%{opacity:.7}100%{opacity:0}}dialog{width:min(430px,calc(100% - 42px));padding:30px 27px 32px;border:1px solid #b67bdf55;border-radius:24px;background:linear-gradient(140deg,#200b32ee,#0b0617f5);color:#f6eaff;box-shadow:0 0 50px #9036ce33;line-height:1.6}dialog::backdrop{background:#080311ab;backdrop-filter:blur(9px)}dialog h2{margin:0 0 22px;text-align:center;font:400 31px 'Galaxy Handwriting',cursive;text-shadow:0 0 18px #ba69ff}dialog p{font-size:21px;margin:0 0 20px}dialog p:last-child{margin-bottom:0}.close{position:absolute;right:13px;top:10px;background:none;border:none;color:#d4aceb;font-size:29px;cursor:pointer;width:38px;height:38px}.status{position:fixed;bottom:90px;left:20px;right:20px;text-align:center;color:#e1c5f1;font:14px system-ui}.status:empty{display:none}@media(max-width:500px){dialog p{font-size:21px}h1{top:24px}.letter{width:49px;height:49px;right:18px}.intro button{padding:15px 28px}}@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
@@ -17,7 +35,7 @@ body.opening .intro button{pointer-events:none}
 <body>
 <canvas id="galaxy" tabindex="0" aria-label="Galaxia de flores moradas. Arrastra para girar, usa la rueda o dos dedos para acercar. Flechas para girar; más y menos para acercar; espacio para pausar."></canvas>
 <h1>Flores moradas para ti <span class="heart">💜</span></h1>
-<div class="intro"><p class="intro-title">Flores moradas <span>para ti 💜</span></p><button id="enter" disabled>Abrir mi galaxia 💜</button></div>
+<div class="intro"><p class="intro-title">Flores moradas <span>para ti 💜</span></p><button id="enter" disabled><span class="button-label">Abrir mi galaxia <span class="button-heart" aria-hidden="true">💜</span></span></button></div>
 <button class="letter" id="letter" aria-label="Abrir dedicatoria"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></button>
 <p class="instructions">Arrastra para girar · Acerca con dos dedos o la rueda</p><p class="status" id="status" role="status"></p>
 <dialog id="message"><button class="close" id="close" aria-label="Cerrar dedicatoria">×</button><h2>Para ti 💜</h2><p>Hoy, 9 de octubre, es un día especial para las flores moradas. Significan admiración, gratitud y cariño, todo lo que siento por ti.</p><p>Cada vez que abras esta galaxia, quiero que sepas lo mucho que me importas.</p></dialog>
