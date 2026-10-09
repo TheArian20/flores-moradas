@@ -24,3 +24,9 @@ Los textos de la carta y los botones se conservaron. La rosa se regeneró tomand
 HTML probado en Chrome headless con renderizado WebGL y red desconectada. Capturas de la entrada, galaxia vertical (482 × 860), escritorio (1440 × 900), vista lateral y carta. Sin errores JavaScript ni WebGL. Zoom comprobado mediante cambio del canvas. Movimiento reducido comprobado mediante igualdad de dos capturas separadas. La prueba usa renderizado de software aislado y no mide el rendimiento de un teléfono físico.
 
 Capturas locales: `video-analysis/october/browser/`. Prueba reproducible desde `galaxia-morada`: `node browser-check.cjs`, usando las dependencias locales de `.render-tools/browser` y Chrome instalado.
+
+## Animación de entrada
+
+La rosa se despliega al cargar, gira continuamente, balancea su volumen y ondula los pétalos. La textura y las partículas comparten la deformación en GPU. Se añadieron 44 puntos luminosos en movimiento y destellos sobre los pétalos. La pausa y la preferencia de movimiento reducido se conservan.
+
+`node check-intro-motion.cjs` comprueba movimiento dentro del recorte de la flor, pausa, entrada a la galaxia y movimiento reducido. La ejecución cambió el 45,5 % de los píxeles del recorte entre dos instantes, sin errores de JavaScript ni de WebGL. Grabación real del canvas: `video-analysis/october/browser/intro-motion.webm`.

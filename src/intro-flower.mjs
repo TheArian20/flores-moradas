@@ -1,5 +1,20 @@
 import * as THREE from 'three';
 
+const petalDeformation=`
+ uniform float uPetalTime;
+ uniform float uPetalOpening;
+ vec3 animatePetal(vec3 p){
+  float r=length(p.xz),a=atan(p.z,p.x),w=smoothstep(.18,1.65,r);
+  float wave=sin(uPetalTime*1.15-a*5.-r*1.8);
+  float breath=sin(uPetalTime*1.3-r*1.4);
+  float spread=1.+w*(.075*breath+.035*wave-.32*(1.-uPetalOpening));
+  float twist=w*.065*sin(uPetalTime*.8+r*2.);
+  p.xz=vec2(cos(a+twist),sin(a+twist))*r*spread;
+  p.y+=w*(.19*wave+.075*breath+.65*(1.-uPetalOpening));
+  return p;
+ }
+`;
+
 // Sample the actual petal silhouette and folds, instead of overlapping circles.
 export function createIntroFlower(texture,glow,random){
  const group=new THREE.Group();
@@ -22,25 +37,35 @@ export function createIntroFlower(texture,glow,random){
  }
  const geometry=new THREE.BufferGeometry().setAttribute('position',new THREE.Float32BufferAttribute(positions,3)).setAttribute('color',new THREE.Float32BufferAttribute(colors,3)).setAttribute('aSeed',new THREE.Float32BufferAttribute(seeds,1)).setAttribute('aSize',new THREE.Float32BufferAttribute(sizes,1));
  geometry.computeBoundingSphere();geometry.boundingSphere.radius+=5;
- const material=new THREE.ShaderMaterial({transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,uniforms:{uTime:{value:0},uDissolve:{value:0},uOpacity:{value:1},uRatio:{value:1}},vertexShader:`
+ const petalTime={value:0},petalOpening={value:0};
+ const material=new THREE.ShaderMaterial({transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,uniforms:{uPetalTime:petalTime,uPetalOpening:petalOpening,uTime:{value:0},uDissolve:{value:0},uOpacity:{value:1},uRatio:{value:1}},vertexShader:`
+  ${petalDeformation}
   attribute vec3 color;attribute float aSeed;attribute float aSize;uniform float uTime;uniform float uDissolve;uniform float uRatio;varying vec3 vColor;varying float vSeed;
-  void main(){vec3 p=position;p.y+=sin(uTime*.8+length(p.xz)*3.+aSeed*.15)*.018;
+  void main(){vec3 p=animatePetal(position);
    vec3 direction=normalize(vec3(p.x+.1*sin(aSeed),.1*sin(aSeed*2.),p.z+.1*cos(aSeed)));p+=direction*uDissolve*(1.4+mod(aSeed,2.));
    vec4 mv=modelViewMatrix*vec4(p,1.);gl_Position=projectionMatrix*mv;gl_PointSize=clamp(aSize*uRatio*20./max(4.,-mv.z),.8,3.5);vColor=color;vSeed=aSeed;}
  `,fragmentShader:`
   uniform float uTime;uniform float uOpacity;varying vec3 vColor;varying float vSeed;
-  void main(){float d=length(gl_PointCoord-.5)*2.;if(d>1.)discard;float a=exp(-d*d*3.)*(.36+.14*sin(uTime*.6+vSeed))*uOpacity;gl_FragColor=vec4(vColor,a);}
+  void main(){float d=length(gl_PointCoord-.5)*2.;if(d>1.)discard;float sparkle=pow(max(0.,sin(uTime*1.7+vSeed)),9.);float a=exp(-d*d*3.)*(.2+.72*sparkle)*uOpacity;gl_FragColor=vec4(mix(vColor,vec3(1.,.88,1.),sparkle*.6),a);}
  `});
  const particles=new THREE.Points(geometry,material);group.add(particles);
  const surfaceGeometry=new THREE.PlaneGeometry(3.4,3.4,40,40),p=surfaceGeometry.attributes.position;
  for(let i=0;i<p.count;i++){const x=p.getX(i),z=-p.getY(i);p.setXYZ(i,x,.27*Math.exp(-(x*x+z*z)*1.15)-.018,z);}
  const surface=new THREE.Mesh(surfaceGeometry,new THREE.MeshBasicMaterial({map:texture,transparent:true,opacity:.66,depthWrite:false,side:THREE.DoubleSide,toneMapped:false}));group.add(surface);
+ surface.material.onBeforeCompile=shader=>{shader.uniforms.uPetalTime=petalTime;shader.uniforms.uPetalOpening=petalOpening;shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\n'+petalDeformation).replace('#include <begin_vertex>','vec3 transformed=animatePetal(position);');};
+ surface.material.customProgramCacheKey=()=> 'intro-petal-motion-v1';
+ surfaceGeometry.computeBoundingSphere();surfaceGeometry.boundingSphere.radius+=1;
+ const fireflyPositions=new Float32Array(44*3),fireflySeeds=Array.from({length:44},()=>random()*Math.PI*2);
+ const fireflies=new THREE.Points(new THREE.BufferGeometry().setAttribute('position',new THREE.BufferAttribute(fireflyPositions,3)),new THREE.PointsMaterial({map:glow,color:0xf7ccff,size:.09,transparent:true,opacity:.85,depthWrite:false,blending:THREE.AdditiveBlending}));fireflies.frustumCulled=false;group.add(fireflies);
  const aura=new THREE.Mesh(new THREE.PlaneGeometry(5.4,5.4),new THREE.MeshBasicMaterial({map:glow,color:0x9c35ee,transparent:true,opacity:.23,depthWrite:false,blending:THREE.AdditiveBlending}));aura.rotation.x=-Math.PI/2;aura.position.y=-.04;group.add(aura);
- return {intro:group,updateIntro(time,progress,ratio){
+ return {intro:group,updateIntro(time,progress,ratio,reducedMotion=false){
+  petalTime.value=time;petalOpening.value=reducedMotion?1:THREE.MathUtils.smoothstep(time,0,2.8);
   const fade=1-THREE.MathUtils.smoothstep(progress,.08,.62);
   material.uniforms.uTime.value=time;material.uniforms.uRatio.value=ratio;material.uniforms.uOpacity.value=fade;
   material.uniforms.uDissolve.value=THREE.MathUtils.smoothstep(progress,.08,.65);
   surface.material.opacity=.66*(1-THREE.MathUtils.smoothstep(progress,0,.38));aura.material.opacity=.23*fade;
-  group.rotation.y=Math.sin(time*.18)*.055;group.rotation.z=Math.sin(time*.25)*.018;group.visible=progress<.65;
+  for(let i=0;i<fireflySeeds.length;i++){const seed=fireflySeeds[i],a=seed+time*(.34+(i%3)*.055),r=1.5+(i%7)*.065+.11*Math.sin(time*.8+seed);fireflyPositions.set([Math.cos(a)*r,.24+Math.sin(a*2+time*.65)*.25,Math.sin(a)*r],i*3);}
+  fireflies.geometry.attributes.position.needsUpdate=true;fireflies.material.opacity=.85*fade;
+  group.rotation.y=time*.22+Math.sin(time*.65)*.055;group.rotation.x=Math.sin(time*.6)*.095;group.rotation.z=Math.sin(time*.75)*.055;group.visible=progress<.65;
  }};
 }

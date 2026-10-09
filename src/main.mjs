@@ -34,7 +34,8 @@ function fitIntro(){const visibleHeight=2*homeDistance()*Math.tan(THREE.MathUtil
 const starPositions=[];for(let i=0;i<1800;i++)starPositions.push((random()-.5)*65,(random()-.5)*45,(random()-.5)*65);
 const stars=new THREE.Points(new THREE.BufferGeometry().setAttribute('position',new THREE.Float32BufferAttribute(starPositions,3)),new THREE.PointsMaterial({map:glow,color:0xc696ee,size:.035,transparent:true,opacity:.42,depthWrite:false}));scene.add(stars);
 const composer=new EffectComposer(renderer);composer.addPass(new RenderPass(scene,camera));const bloom=new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),.42,.55,.82);composer.addPass(bloom);composer.addPass(new OutputPass());
-let opened=false,transition=0,time=0,last=0,disposed=false,paused=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
+let opened=false,transition=0,time=0,last=0,disposed=false,paused=reducedMotion;
 function resize(){camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight,false);composer.setSize(innerWidth,innerHeight);if(!opened){reset();fitIntro();}}addEventListener('resize',resize);resize();
 button.disabled=false;document.body.classList.add('ready');
 button.addEventListener('click',()=>{opened=true;world.visible=true;button.disabled=true;document.body.classList.add('opening');canvas.focus();});
@@ -47,7 +48,7 @@ renderer.setAnimationLoop(now=>{
  if(disposed)return;const dt=last?Math.min((now-last)/1000,.05):0;last=now;if(document.hidden)return;
  if(!paused&&!message.open)time+=dt;
  controls.enabled=opened&&transition>=1&&!message.open;controls.update();
- updateIntro(time,transition,renderer.getPixelRatio());
+ updateIntro(time,transition,renderer.getPixelRatio(),reducedMotion);
  if(opened){
   if(!message.open)transition=Math.min(1,transition+(paused?1:dt/2.4));
   const reveal=THREE.MathUtils.smoothstep(transition,.34,1);

@@ -16,6 +16,8 @@ Descarga `index.html` y ábrelo en Chrome, Edge o Firefox con WebGL y aceleraci�
 
 La animación comienza pausada cuando el sistema solicita movimiento reducido.
 
+En la entrada, la rosa se abre durante los primeros segundos, gira de forma continua y ondula los pétalos. La superficie y las partículas comparten la misma deformación para permanecer alineadas. Pequeños puntos de luz orbitan la flor y sus destellos cambian con el tiempo. Espacio pausa también esta escena.
+
 La flor central se despliega al entrar y deforma sus pétalos con ondas desfasadas, una respiración suave y un balanceo. La animación conserva el centro y se detiene al pausar o abrir la carta.
 
 ## Editar y reconstruir
