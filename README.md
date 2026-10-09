@@ -20,3 +20,9 @@ Si tu sistema tiene activada la preferencia de movimiento reducido, la animació
 ## Recursos
 
 Las flores se generaron con ImageGen y están integradas en el HTML. La composición se inspira en el video de referencia proporcionado por el autor del proyecto.
+
+## Revisión visual
+
+La flor central usa una imagen generada a partir de la referencia y mapeada sobre una superficie curva de 392 triángulos con orden de profundidad. Incluye perspectiva, giro por debajo del disco, apertura progresiva y controles de zoom limitados. Las flores secundarias responden a la inclinación de la cámara.
+
+Se comprobaron renders Canvas reales de la entrada, vista frontal, de canto y cenital. Se probaron carga de imágenes, apertura y cierre de la carta, zoom máximo/mínimo, reinicio y pausa. Estas comprobaciones no sustituyen una prueba de interacción en un navegador real.
