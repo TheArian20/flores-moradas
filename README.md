@@ -1,6 +1,6 @@
 ﻿# Flores moradas para ti 💜 — versión 3D
 
-Galaxia interactiva en Three.js/WebGL basada en el video de referencia: entrada con flor de partículas blancas, expansión al abrir, rosa violeta central, rosas pequeñas, margaritas, flores de cinco pétalos, polvo luminoso, frases y anillos de texto. Las flores usan texturas dentro de una escena con cámara orbital; la rosa principal está sobre una superficie curva.
+Galaxia interactiva en Three.js/WebGL basada en el video de referencia: entrada con rosa translúcida y partículas, transición al abrir, rosa violeta central, rosas pequeñas, margaritas, flores de cinco pétalos, polvo luminoso y frases flotantes. Las frases próximas al centro orbitan mirando hacia la cámara para conservar la lectura. Las flores usan texturas dentro de una escena con cámara orbital; la rosa principal está sobre una superficie curva.
 
 ## Abrir
 
@@ -20,7 +20,7 @@ La flor central se despliega al entrar y deforma sus pétalos con ondas desfasad
 
 ## Editar y reconstruir
 
-Las fuentes actuales están en `src/main.mjs`, `src/reference-scene.mjs`, `src/galaxy-particles.mjs`, `src/flower-motion.mjs` y `src/template.html`. Las cuatro texturas WebP y la tipografía están integradas en `src/reference-assets.mjs` y `src/font-asset.mjs` para permitir abrir el HTML sin conexión.
+Las fuentes actuales están en `src/main.mjs`, `src/reference-scene.mjs`, `src/intro-flower.mjs`, `src/galaxy-particles.mjs`, `src/flower-motion.mjs` y `src/template.html`. Las cuatro texturas WebP y la tipografía están integradas en `src/reference-assets.mjs` y `src/font-asset.mjs` para permitir abrir el HTML sin conexión.
 
 ```sh
 npm install

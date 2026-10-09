@@ -25,17 +25,18 @@ function reset(){const d=homeDistance();camera.position.set(0,d*.94,d*.342);cont
 function glowTexture(){const c=document.createElement('canvas');c.width=c.height=64;const ctx=c.getContext('2d'),g=ctx.createRadialGradient(32,32,0,32,32,32);g.addColorStop(0,'#fffaff');g.addColorStop(.12,'#f8d5ff');g.addColorStop(.32,'#c262e777');g.addColorStop(1,'#8500bf00');ctx.fillStyle=g;ctx.fillRect(0,0,64,64);return new THREE.CanvasTexture(c);}
 const glow=glowTexture(),textCache=new Map();
 function makeText(text,single){const key=(single?'char:':'line:')+text;if(textCache.has(key))return textCache.get(key);const c=document.createElement('canvas');c.width=1024;c.height=128;const ctx=c.getContext('2d');ctx.font=single?'56px Georgia':'54px "Galaxy Handwriting"';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#f2dbff';ctx.fillText(text,c.width/2,c.height/2,c.width-6);const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;textCache.set(key,tex);return tex;}
-const loader=new THREE.TextureLoader(),textures={};let loaded=0;
-for(const [key,url]of Object.entries(assets)){textures[key]=loader.load(url,()=>{if(++loaded===4)button.disabled=false;},undefined,()=>{status.textContent='No se pudieron cargar las flores. Recarga la página.';});textures[key].colorSpace=THREE.SRGBColorSpace;textures[key].anisotropy=renderer.capabilities.getMaxAnisotropy();}
-const {world,rose,dust,sparkles,intro,billboards,updateGalaxy}=createReferenceScene(textures,glow,makeText,random);scene.add(world,intro);world.visible=false;
-const introMaterial=intro.material;
+const loader=new THREE.TextureLoader(),textures={};
+await Promise.all(Object.entries(assets).map(async([key,url])=>{const texture=await loader.loadAsync(url);texture.colorSpace=THREE.SRGBColorSpace;texture.anisotropy=renderer.capabilities.getMaxAnisotropy();textures[key]=texture;}));
+const {world,rose,dust,sparkles,intro,updateIntro,billboards,updateGalaxy}=createReferenceScene(textures,glow,makeText,random);scene.add(world,intro);world.visible=false;
+
 const animateFlower=createFlowerMotion(rose);
-function fitIntro(){const visibleHeight=2*homeDistance()*Math.tan(THREE.MathUtils.degToRad(43/2)),diameter=Math.min(camera.aspect*.68,.42)*visibleHeight;intro.scale.setScalar(diameter/3.4);intro.position.z=-visibleHeight*.045;}fitIntro();
+function fitIntro(){const visibleHeight=2*homeDistance()*Math.tan(THREE.MathUtils.degToRad(43/2)),diameter=Math.min(camera.aspect*.76,.4)*visibleHeight;intro.scale.setScalar(diameter/3.4);intro.position.z=-visibleHeight*.055;}fitIntro();
 const starPositions=[];for(let i=0;i<1800;i++)starPositions.push((random()-.5)*65,(random()-.5)*45,(random()-.5)*65);
 const stars=new THREE.Points(new THREE.BufferGeometry().setAttribute('position',new THREE.Float32BufferAttribute(starPositions,3)),new THREE.PointsMaterial({map:glow,color:0xc696ee,size:.035,transparent:true,opacity:.42,depthWrite:false}));scene.add(stars);
 const composer=new EffectComposer(renderer);composer.addPass(new RenderPass(scene,camera));const bloom=new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight),.42,.55,.82);composer.addPass(bloom);composer.addPass(new OutputPass());
 let opened=false,transition=0,time=0,last=0,disposed=false,paused=matchMedia('(prefers-reduced-motion: reduce)').matches;
 function resize(){camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight,false);composer.setSize(innerWidth,innerHeight);if(!opened){reset();fitIntro();}}addEventListener('resize',resize);resize();
+button.disabled=false;document.body.classList.add('ready');
 button.addEventListener('click',()=>{opened=true;world.visible=true;button.disabled=true;document.body.classList.add('opening');canvas.focus();});
 document.getElementById('letter').onclick=()=>message.showModal();document.getElementById('close').onclick=()=>message.close();message.addEventListener('click',event=>{if(event.target===message){const r=message.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)message.close();}});
 canvas.addEventListener('dblclick',reset);canvas.addEventListener('keydown',e=>{if([' ','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','+','-','='].includes(e.key))e.preventDefault();if(e.key===' ')paused=!paused;if(e.key.toLowerCase()==='r')reset();const offset=camera.position.clone().sub(controls.target),sphere=new THREE.Spherical().setFromVector3(offset);if(e.key==='ArrowLeft')sphere.theta-=.12;if(e.key==='ArrowRight')sphere.theta+=.12;if(e.key==='ArrowUp')sphere.phi-=.1;if(e.key==='ArrowDown')sphere.phi+=.1;if(e.key==='+'||e.key==='=')sphere.radius*=.9;if(e.key==='-')sphere.radius/= .9;sphere.radius=THREE.MathUtils.clamp(sphere.radius,controls.minDistance,controls.maxDistance);sphere.phi=THREE.MathUtils.clamp(sphere.phi,controls.minPolarAngle,controls.maxPolarAngle);camera.position.copy(controls.target).add(new THREE.Vector3().setFromSpherical(sphere));controls.update();});
@@ -46,12 +47,10 @@ renderer.setAnimationLoop(now=>{
  if(disposed)return;const dt=last?Math.min((now-last)/1000,.05):0;last=now;if(document.hidden)return;
  if(!paused&&!message.open)time+=dt;
  controls.enabled=opened&&transition>=1&&!message.open;controls.update();
- intro.rotation.y=time*.1;
+ updateIntro(time,transition,renderer.getPixelRatio());
  if(opened){
   if(!message.open)transition=Math.min(1,transition+(paused?1:dt/2.4));
-  const scatter=THREE.MathUtils.smoothstep(transition,0,.6),reveal=THREE.MathUtils.smoothstep(transition,.34,1);
-  introMaterial.opacity=1-scatter;intro.visible=transition<.65;
-  if(transition<1){const scale=Math.min(camera.aspect*.68,.42)*2*homeDistance()*Math.tan(THREE.MathUtils.degToRad(21.5))/3.4;intro.scale.setScalar(scale*(1+scatter*3));}
+  const reveal=THREE.MathUtils.smoothstep(transition,.34,1);
   world.scale.setScalar(.08+.92*reveal);world.visible=reveal>.01;
   if(transition>.42)document.body.classList.add('open');
   world.rotation.y=time*.035;dust.rotation.y=time*.009;rose.rotation.y=time*.045;
